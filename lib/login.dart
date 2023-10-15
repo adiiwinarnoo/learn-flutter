@@ -12,6 +12,13 @@ class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
+  void showToast(String message){
+     Toast.show(
+            message,
+            duration: Toast.lengthLong, gravity: Toast.center,backgroundColor: Colors.red
+      );
+  }
+
    @override
   void initState() {
     super.initState();
@@ -45,35 +52,45 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
+    Widget customBgTextField({required String label, TextEditingController? controller, required bool obsText,
+    }){
+      return Container(
+        margin: const EdgeInsets.only(bottom: 22.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+        Container(
+          margin: const EdgeInsets.only(bottom: 10.0),
+          child: Text(label,),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xffE4E4E4),
+            borderRadius: BorderRadius.circular(10.0)
+          ),
+          child:  TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: "Input $label",
+            contentPadding: const EdgeInsets.all(10)
+          ),
+          obscureText: obsText,
+        ),
+        ),
+      ],
+    ),
+  );
+}
+
     Widget textField = Container(
       child: Padding(
         padding: const EdgeInsets.only(left: 20,bottom: 20,right: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              margin: const EdgeInsets.only(bottom: 10.0),
-              child: const Text("매장명"),
-            ),
-            TextField(
-              controller: usernameController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "input username"
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 20.0),
-              child: const Text("PW"),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: "input your password"
-              ),
-              obscureText: true,
-            )
+            customBgTextField(label: "매장명",controller: usernameController, obsText: false),
+            customBgTextField(label: "PW",controller: passwordController, obsText: true)
           ],
         ),
       ),
@@ -88,21 +105,22 @@ class _LoginPageState extends State<LoginPage> {
           backgroundColor: Colors.black
         ),
         onPressed: () {
-          var usernameText = usernameController.text;
+          var usernameText = usernameController.text.trim();
           var passwordText = passwordController.text;
 
-          Toast.show(
-            "username anda $usernameText, password anda $passwordText",
-            duration: Toast.lengthLong, gravity: Toast.center,backgroundColor: Colors.red
-            );
+          if(usernameText.isEmpty){
+            showToast("username cannot be null or empty");
+          }else if (passwordText.isEmpty){
+            showToast("password cannot be null or empty");
+          }else{
+            showToast("ini akun $usernameText dan password $passwordText");
+          }
         },
         child: const Text("로그인",style: TextStyle(color: Colors.white),
         ),
       ),
       ),
     );
-
-
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
