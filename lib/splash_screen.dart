@@ -31,7 +31,7 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/app-icon.png',width: 200,height: 200,),
+            Image.asset('assets/images/icon.png',width: 200,height: 200,),
           ],
         ),
       ),
