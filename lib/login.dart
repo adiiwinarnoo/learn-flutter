@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:caffein_flutter/home-page.dart';
+import 'package:caffein_flutter/utils/auth-manager.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 import 'home-page.dart';
@@ -22,31 +22,38 @@ class _LoginPageState extends State<LoginPage> {
   Future<Login> login(String username, String password) async {
     try {
       final response = await http.post(
-          Uri.parse('https://api.addictioncompany.co.kr/api/company/login'),
-           headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, String>{
-      'account_id': username,
-      'account_pwd' : password
-    }),);
-          
+        Uri.parse('https://api.addictioncompany.co.kr/api/company/login'),
+        headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8',},
+        body: jsonEncode(<String, String>{'account_id': username, 'account_pwd': password}),
+      );
+
       if (response.statusCode == 200) {
         setState(() {
           isLoading = false;
-        });
-        showToast("berhasil login");
+        });        
+        //for saving token in variable
+        String userToken = Login.fromJson(jsonDecode(response.body)).token;
+
+        //saving token in authmanager
+        AuthManager().setUserToken(userToken);
+
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePagge()),);
         return Login.fromJson(jsonDecode(response.body));
-      } else {
-         final responseData = jsonDecode(response.body); // Ubah respons JSON menjadi objek Dart
-      final errorMessage = responseData['message']; 
+        
+      }else if (response.statusCode == 401){
+        setState(() {
+          isLoading = false;
+        });   
+        showToast("password wrong");
+        return Login(status: response.statusCode, message: "wrong password", token: "kosong");
+      }else{
+        final responseData = jsonDecode(response.body); // Ubah respons JSON menjadi objek Dart
+        final errorMessage = responseData['message'];
         showToast(errorMessage);
-        print(response.statusCode);
         setState(() {
           isLoading = false;
         });
-        return const Login(
-            status: 555, message: "gagal dielse", token: "kosong");
+        return Login(status: response.statusCode, message: errorMessage, token: "kosong");
       }
     } catch (e) {
       print(e);
@@ -54,13 +61,13 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         isLoading = false;
       });
-      return const Login(status: 555, message: "gagal", token: "kosong");
+      return Login(status: 500, message: e.toString(), token: "kosong");
     }
   }
 
   void showToast(String message) {
     Toast.show(message,
-        duration: Toast.lengthLong,
+        duration: Toast.lengthShort,
         gravity: Toast.center,
         backgroundColor: Colors.red);
   }
@@ -168,15 +175,20 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: isLoading
               ? null
               : () {
-                  var usernameText = usernameController.text;
+                  var usernameText = usernameController.text.trim();
                   var passwordText = passwordController.text;
 
                   setState(() {
                     isLoading = true;
                   });
-                  print("$usernameText, $passwordText");
 
-                  login(usernameText, passwordText);
+                  if (usernameText.isEmpty) {
+                    showToast("Username cannot be null");
+                  } else if (passwordText.isEmpty) {
+                    showToast("Password cannot be null");
+                  } else {
+                    login(usernameText, passwordText);
+                  }
                 },
           child: isLoading
               ? progressBar
