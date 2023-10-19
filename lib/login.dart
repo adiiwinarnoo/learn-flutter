@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
         //saving token in authmanager
         AuthManager().setUserToken(userToken);
 
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePagge()),);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HomePage()),);
         return Login.fromJson(jsonDecode(response.body));
         
       }else if (response.statusCode == 401){
